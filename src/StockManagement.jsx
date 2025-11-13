@@ -12,6 +12,8 @@ import {
   PlayCircle,
 } from "lucide-react";
 import * as XLSX from "xlsx";
+import logo from "./public/logo.png";
+
 
 export default function StockManagement() {
   const [stockFile, setStockFile] = useState(null);
@@ -220,11 +222,14 @@ export default function StockManagement() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
+        <div className="w-full flex justify-center mb-4">
+  <img src={logo} className="h-16 object-contain" />
+</div>
         {/* En-tête */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <Package className="w-8 h-8 text-blue-600" />
+              <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
               <div>
                 <h1 className="text-3xl font-bold text-gray-800">
                   Analyse de Stock - Pièces de Rechange
