@@ -19,6 +19,7 @@ export default function StockManagement() {
   const [stockData, setStockData] = useState([]);
   const [seuilData, setSeuilData] = useState([]);
   const [mergedData, setMergedData] = useState([]);
+  const [articlesSansSeuil, setArticlesSansSeuil] = useState([]);
   const [filterMode, setFilterMode] = useState("all");
   const [loading, setLoading] = useState(false);
   const [analyseDone, setAnalyseDone] = useState(false);
@@ -81,65 +82,96 @@ export default function StockManagement() {
 
   // Fusion des deux fichiers
   const mergeDataFiles = (stock, seuils) => {
-    // Créer un map des seuils par pièce
+    // Créer un map des seuils par référence interne
     const seuilMap = {};
     seuils.forEach((item) => {
-      const piece =
+      // Chercher la référence dans différentes colonnes possibles
+      const reference =
+        item["Reference interne"] ||
+        item["Référence interne"] ||
+        item["Reference"] ||
+        item["Référence"] ||
+        item.Reference ||
+        item.Référence ||
         item.Pièce ||
         item.Piece ||
-        item.pièce ||
-        item.piece ||
-        item.Article ||
-        item.Reference;
+        item.Article;
       const seuil =
         item["Seuil (U)"] ||
         item.Seuil ||
         item.seuil ||
         item.SEUIL ||
-        item.Minimum;
+        item.Minimum ||
+        item["Quantité seuil"];
 
-      if (piece && seuil !== undefined) {
-        const pieceKey = String(piece).trim().toLowerCase();
-        seuilMap[pieceKey] = parseFloat(seuil) || 0;
+      // Ignorer les lignes vides
+      if (
+        reference &&
+        String(reference).trim() !== "" &&
+        seuil !== undefined &&
+        seuil !== ""
+      ) {
+        const referenceKey = String(reference).trim().toLowerCase();
+        seuilMap[referenceKey] = parseFloat(seuil) || 0;
       }
     });
 
     // Fusionner avec les données de stock
-    const merged = stock
-      .map((item, index) => {
-        const piece =
-          item.Pièce ||
-          item.Piece ||
-          item.pièce ||
-          item.piece ||
-          item.Article ||
-          item.Reference;
-        const qte =
-          item["Quantité Stock"] ||
-          item["Quantite Stock"] ||
-          item.Quantité ||
-          item.Quantite ||
-          item.Stock ||
-          item.QTE ||
-          0;
+    const merged = [];
+    const articlesSansSeuil = [];
 
-        const pieceKey = String(piece || "")
-          .trim()
-          .toLowerCase();
-        const seuil = seuilMap[pieceKey] || 0;
-        const quantite = parseFloat(qte) || 0;
+    stock.forEach((item, index) => {
+      // Chercher la référence interne dans différentes colonnes possibles
+      const reference =
+        item["Reference interne"] ||
+        item["Référence interne"] ||
+        item["Reference"] ||
+        item["Référence"] ||
+        item.Reference ||
+        item.Référence ||
+        item.Pièce ||
+        item.Piece ||
+        item.Article;
+      const qte =
+        item["Quantité en stock"] ||
+        item["Quantite en stock"] ||
+        item["Quantité Stock"] ||
+        item["Quantite Stock"] ||
+        item.Quantité ||
+        item.Quantite ||
+        item.Stock ||
+        item.QTE;
 
-        return {
+      // Ignorer les lignes vides
+      if (!reference || String(reference).trim() === "") {
+        return;
+      }
+
+      const referenceKey = String(reference).trim().toLowerCase();
+      const quantite = parseFloat(qte) || 0;
+      const seuil = seuilMap[referenceKey];
+
+      if (seuil !== undefined) {
+        // Article avec seuil défini
+        merged.push({
           id: index + 1,
-          piece: piece,
+          piece: reference,
           quantite: quantite,
           seuil: seuil,
           statut: quantite < seuil ? "alerte" : "ok",
-        };
-      })
-      .filter((item) => item.piece);
+        });
+      } else {
+        // Article sans seuil
+        articlesSansSeuil.push({
+          id: index + 1,
+          piece: reference,
+          quantite: quantite,
+        });
+      }
+    });
 
     setMergedData(merged);
+    setArticlesSansSeuil(articlesSansSeuil);
   };
 
   const getFilteredData = () => {
@@ -177,8 +209,8 @@ export default function StockManagement() {
 
   const exportResults = () => {
     const dataToExport = getFilteredData().map((item) => ({
-      Pièce: item.piece,
-      "Quantité Stock": item.quantite,
+      "Référence interne": item.piece,
+      "Quantité en stock": item.quantite,
       "Seuil (U)": item.seuil,
       Commentaire:
         item.statut === "alerte"
@@ -204,6 +236,7 @@ export default function StockManagement() {
     setStockData([]);
     setSeuilData([]);
     setMergedData([]);
+    setArticlesSansSeuil([]);
     setFilterMode("all");
     setAnalyseDone(false);
   };
@@ -230,13 +263,16 @@ export default function StockManagement() {
               className="mx-auto h-24 mb-3 drop-shadow-lg"
             />
             <p className="text-gray-600 text-sm font-medium">
-              Gestion de Stock - PDR
+              Gestion de Stock - Pièces de Rechange
             </p>
           </div>
 
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Analyse de Stock
+                </h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Importez vos deux fichiers Excel et validez pour analyser
                 </p>
@@ -275,8 +311,8 @@ export default function StockManagement() {
                       Fichier 1 : Stock Actuel
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
-                      Colonnes : <strong>Pièce</strong> |{" "}
-                      <strong>Quantité Stock</strong>
+                      Colonnes : <strong>Reference interne</strong> |{" "}
+                      <strong>Quantité en stock</strong>
                     </p>
                     <label
                       className={`cursor-pointer inline-flex items-center gap-2 px-6 py-3 rounded-lg transition ${
@@ -320,7 +356,7 @@ export default function StockManagement() {
                       Fichier 2 : Seuils Minimums
                     </h3>
                     <p className="text-sm text-gray-600 mb-4">
-                      Colonnes : <strong>Pièce</strong> |{" "}
+                      Colonnes : <strong>Reference interne</strong> |{" "}
                       <strong>Seuil (U)</strong>
                     </p>
                     <label
@@ -385,19 +421,24 @@ export default function StockManagement() {
                 </p>
                 <ul className="text-sm text-gray-700 mt-2 ml-4 list-disc space-y-1">
                   <li>
-                    <strong>Fichier 1 :</strong> Colonne A = "Pièce" | Colonne B
-                    = "Quantité Stock"
+                    <strong>Fichier 1 :</strong> Colonne "Reference interne" +
+                    Colonne "Quantité en stock"
                   </li>
                   <li>
-                    <strong>Fichier 2 :</strong> Colonne A = "Pièce" | Colonne B
-                    = "Seuil (U)"
+                    <strong>Fichier 2 :</strong> Colonne "Reference interne" +
+                    Colonne "Seuil (U)"
                   </li>
                   <li>
                     La ligne 1 contient les en-têtes (sera ignorée
                     automatiquement)
                   </li>
                   <li>
-                    Les noms de pièces doivent correspondre entre les deux
+                    Les références internes doivent correspondre entre les deux
+                    fichiers
+                  </li>
+                  <li>Les lignes vides seront automatiquement ignorées</li>
+                  <li>
+                    L'ordre des lignes peut être différent entre les deux
                     fichiers
                   </li>
                 </ul>
@@ -511,8 +552,10 @@ export default function StockManagement() {
                 <table className="w-full">
                   <thead className="bg-gray-800 text-white sticky top-0 z-10">
                     <tr>
-                      <th className="px-4 py-3 text-left">Pièce</th>
-                      <th className="px-4 py-3 text-center">Quantité Stock</th>
+                      <th className="px-4 py-3 text-left">Référence interne</th>
+                      <th className="px-4 py-3 text-center">
+                        Quantité en stock
+                      </th>
                       <th className="px-4 py-3 text-center">Seuil (U)</th>
                       <th className="px-4 py-3 text-left">Commentaire</th>
                       <th className="px-4 py-3 text-center">Statut</th>
@@ -588,6 +631,60 @@ export default function StockManagement() {
               </div>
             </div>
           </>
+        )}
+
+        {/* Section Articles sans seuil */}
+        {analyseDone && articlesSansSeuil.length > 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-6 mt-6 animate-fade-in">
+            <div className="flex items-center gap-3 mb-4">
+              <AlertCircle className="w-6 h-6 text-orange-500" />
+              <h3 className="text-xl font-bold text-gray-800">
+                Articles sans seuil défini ({articlesSansSeuil.length})
+              </h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-4">
+              Ces articles sont présents dans le stock mais n'ont pas de seuil
+              correspondant dans le fichier des seuils.
+            </p>
+            <div className="overflow-x-auto max-h-[400px] overflow-y-auto border rounded-lg">
+              <table className="w-full">
+                <thead className="bg-orange-100 sticky top-0">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-gray-700">
+                      Référence interne
+                    </th>
+                    <th className="px-4 py-3 text-center text-gray-700">
+                      Quantité en stock
+                    </th>
+                    <th className="px-4 py-3 text-left text-gray-700">
+                      Statut
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {articlesSansSeuil.map((item) => (
+                    <tr
+                      key={item.id}
+                      className="border-b hover:bg-orange-50 transition"
+                    >
+                      <td className="px-4 py-3 font-medium text-gray-800">
+                        {item.piece}
+                      </td>
+                      <td className="px-4 py-3 text-center font-semibold text-lg">
+                        {item.quantite}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1 bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
+                          <AlertCircle className="w-4 h-4" />
+                          Seuil non défini
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
       </div>
     </div>
