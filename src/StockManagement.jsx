@@ -270,9 +270,6 @@ export default function StockManagement() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">
-                  Analyse de Stock
-                </h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Importez vos deux fichiers Excel et validez pour analyser
                 </p>
