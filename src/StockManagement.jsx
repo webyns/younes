@@ -263,7 +263,7 @@ export default function StockManagement() {
               className="mx-auto h-24 mb-3 drop-shadow-lg"
             />
             <p className="text-gray-600 text-sm font-medium">
-              Gestion de Stock - Pièces de Rechange
+              Gestion de Stock - Magasin GSE
             </p>
           </div>
 
