@@ -12,8 +12,6 @@ import {
   PlayCircle,
 } from "lucide-react";
 import * as XLSX from "xlsx";
-import logo from "./public/logo.png";
-
 
 export default function StockManagement() {
   const [stockFile, setStockFile] = useState(null);
@@ -222,18 +220,23 @@ export default function StockManagement() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
-        <div className="w-full flex justify-center mb-4">
-  <img src={logo} className="h-16 object-contain" />
-</div>
         {/* En-tête */}
         <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+          {/* Logo RAM Handling */}
+          <div className="text-center mb-8">
+            <img
+              src="https://cdn-kdbdd.nitrocdn.com/SvWFclJfHxSKObrtugLZmNKofnNMqkvK/assets/images/optimized/rev-ddadf4d/ramhandling.com/wp-content/uploads/2023/07/ramh_handling_new_logo_310_138.png"
+              alt="RAM Handling Logo"
+              className="mx-auto h-24 mb-3 drop-shadow-lg"
+            />
+            <p className="text-gray-600 text-sm font-medium">
+              Gestion de Stock - PDR
+            </p>
+          </div>
+
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <img src={logo} alt="Logo" className="w-12 h-12 object-contain" />
               <div>
-                <h1 className="text-3xl font-bold text-gray-800">
-                  Analyse de Stock - Pièces de Rechange
-                </h1>
                 <p className="text-sm text-gray-500 mt-1">
                   Importez vos deux fichiers Excel et validez pour analyser
                 </p>
