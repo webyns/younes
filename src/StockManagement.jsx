@@ -415,34 +415,7 @@ export default function StockManagement() {
               </div>
 
               {/* Instructions */}
-              <div className="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                <p className="text-sm text-gray-700">
-                  <strong>📋 Format Excel attendu :</strong>
-                </p>
-                <ul className="text-sm text-gray-700 mt-2 ml-4 list-disc space-y-1">
-                  <li>
-                    <strong>Fichier 1 :</strong> Colonne "Reference interne" +
-                    Colonne "Quantité en stock"
-                  </li>
-                  <li>
-                    <strong>Fichier 2 :</strong> Colonne "Reference interne" +
-                    Colonne "Seuil (U)"
-                  </li>
-                  <li>
-                    La ligne 1 contient les en-têtes (sera ignorée
-                    automatiquement)
-                  </li>
-                  <li>
-                    Les références internes doivent correspondre entre les deux
-                    fichiers
-                  </li>
-                  <li>Les lignes vides seront automatiquement ignorées</li>
-                  <li>
-                    L'ordre des lignes peut être différent entre les deux
-                    fichiers
-                  </li>
-                </ul>
-              </div>
+              
             </>
           )}
         </div>
